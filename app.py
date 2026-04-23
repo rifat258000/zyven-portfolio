@@ -1,7 +1,7 @@
 """Flask application — portfolio + contest tracker."""
 import os
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from functools import wraps
 
 from flask import Flask, jsonify, request, render_template, session, abort
@@ -9,7 +9,7 @@ from flask_cors import CORS
 from werkzeug.security import check_password_hash
 
 from models import db, Contest, Project, SiteConfig
-import config as cfg
+import config as cfg  # noqa: F401 — triggers data/ dir creation
 
 
 def create_app():
@@ -129,7 +129,7 @@ def list_contests():
 
     sort = request.args.get("sort", "latest")
     if sort == "deadline":
-        q = q.order_by(Contest.pinned.desc(), Contest.deadline.asc().nullslast(), Contest.created_at.desc())
+        q = q.order_by(Contest.pinned.desc(), Contest.deadline.asc().nulls_last(), Contest.created_at.desc())
     else:
         q = q.order_by(Contest.pinned.desc(), Contest.created_at.desc())
 
@@ -271,9 +271,52 @@ def delete_project(pid):
 
 # ── Run ───────────────────────────────────────────────────
 
-# Ensure tables exist on startup (works for both dev and production)
+# Ensure tables exist and seed default data on startup
+def _seed_defaults():
+    """Populate empty tables with default data (runs on every fresh boot)."""
+    if not SiteConfig.query.first():
+        defaults = {
+            "hero_title": "0x_Zyven",
+            "hero_subtitle": "Web3 Creator | Crypto Enthusiast | Builder",
+            "about_text": "I'm a passionate Web3 creator and crypto enthusiast exploring the intersection of AI, blockchain, and digital culture. I build tools, track contests, and share insights with the community.",
+            "x_username": "@0x_zyven",
+            "telegram_username": "@Rifatsync",
+            "avatar_url": "",
+            "contact_email": "",
+        }
+        for k, v in defaults.items():
+            db.session.add(SiteConfig(key=k, value=v))
+
+    if not Project.query.first():
+        for p in [
+            Project(title="RifatAI Telegram Bot",
+                    description="All-in-one Telegram bot with crypto tracking, AI chat, admin tools, wallet monitoring, and 50+ commands.",
+                    url="https://t.me/RifatAI_bot", tags="telegram,bot,crypto,ai", featured=True, order=1),
+            Project(title="Contest Tracker Dashboard",
+                    description="Web dashboard for tracking AI, meme, video, and Web3 creator contests across Twitter/X and public sources.",
+                    url="#contests", tags="web3,dashboard,contests", featured=True, order=2),
+        ]:
+            db.session.add(p)
+
+    if not Contest.query.first():
+        now = datetime.now(timezone.utc)
+        for c in [
+            Contest(title="Sample AI Art Contest", source="@example_ai",
+                    description="Create an AI-generated artwork on the theme of 'Future Cities'. Top 3 win prizes.",
+                    category="ai", deadline=now + timedelta(days=7), prize="$500 + NFT",
+                    url="https://x.com", pinned=True, status="active"),
+            Contest(title="Sample Meme Challenge", source="@meme_master",
+                    description="Funniest crypto meme wins. Quote tweet with your best meme.",
+                    category="meme", deadline=now + timedelta(days=3), prize="100 USDT",
+                    url="https://x.com", status="active"),
+        ]:
+            db.session.add(c)
+
+    db.session.commit()
+
 with app.app_context():
     db.create_all()
+    _seed_defaults()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
