@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — 0x_Zyven</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand"><span>0x_</span>Zyven <span style="color:var(--text-muted);font-size:.75rem;margin-left:8px;">ADMIN</span></div>
+    <ul class="nav-links">
+      <li><a href="/">View Site</a></li>
+    </ul>
+  </nav>
+
+  <div class="admin-wrapper">
+
+    <!-- ═══ LOGIN ═══ -->
+    <div id="login-view" class="login-container">
+      <div class="login-box">
+        <h2>Admin Panel</h2>
+        <p>Enter password to continue</p>
+        <form id="login-form">
+          <input type="password" id="admin-password" class="input" placeholder="Password" autocomplete="current-password" required>
+          <button type="submit" class="btn btn-primary">Login</button>
+          <p id="login-error" class="login-error"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div id="dashboard-view" class="admin-dash" style="display:none;">
+      <div class="admin-header">
+        <h1>Dashboard</h1>
+        <button class="btn btn-outline btn-sm" onclick="adminLogout()">Logout</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="contests" onclick="switchTab('contests')">Contests</button>
+        <button class="admin-tab" data-tab="projects" onclick="switchTab('projects')">Projects</button>
+        <button class="admin-tab" data-tab="settings" onclick="switchTab('settings')">Settings</button>
+      </div>
+
+      <!-- ═══ CONTESTS TAB ═══ -->
+      <div id="panel-contests" class="tab-panel active">
+
+        <!-- Add/Edit Form -->
+        <div class="admin-form">
+          <h3 id="contest-form-title">Add Contest</h3>
+          <form id="contest-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Title *</label>
+                <input type="text" name="title" class="input" placeholder="Contest title" required>
+              </div>
+              <div class="form-group">
+                <label>Source / Account</label>
+                <input type="text" name="source" class="input" placeholder="@account_name">
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select name="category" class="input">
+                  <option value="ai">AI</option>
+                  <option value="meme">Meme</option>
+                  <option value="video">Video</option>
+                  <option value="web3">Web3</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Prize</label>
+                <input type="text" name="prize" class="input" placeholder="$500, NFT, etc.">
+              </div>
+              <div class="form-group">
+                <label>URL (X post or source)</label>
+                <input type="url" name="url" class="input" placeholder="https://x.com/...">
+              </div>
+              <div class="form-group">
+                <label>Deadline</label>
+                <input type="datetime-local" name="deadline" class="input">
+              </div>
+              <div class="form-group">
+                <label>Image URL (optional)</label>
+                <input type="url" name="image_url" class="input" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select name="status" class="input">
+                  <option value="active">Active</option>
+                  <option value="ended">Ended</option>
+                  <option value="saved">Saved/Bookmarked</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label>Description</label>
+                <textarea name="description" class="input" rows="3" placeholder="Short description of the contest..."></textarea>
+              </div>
+              <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="pinned"> Pin this contest
+                </label>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" id="contest-form-submit" class="btn btn-primary btn-sm">Add Contest</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="resetContestForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Contests Table -->
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Deadline</th>
+                <th>Prize</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="contests-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ PROJECTS TAB ═══ -->
+      <div id="panel-projects" class="tab-panel">
+
+        <!-- Add/Edit Form -->
+        <div class="admin-form">
+          <h3 id="project-form-title">Add Project</h3>
+          <form id="project-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Title *</label>
+                <input type="text" name="title" class="input" placeholder="Project name" required>
+              </div>
+              <div class="form-group">
+                <label>URL</label>
+                <input type="url" name="url" class="input" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>Tags (comma-separated)</label>
+                <input type="text" name="tags" class="input" placeholder="web3, bot, crypto">
+              </div>
+              <div class="form-group">
+                <label>Order</label>
+                <input type="number" name="order" class="input" value="0">
+              </div>
+              <div class="form-group">
+                <label>Image URL (optional)</label>
+                <input type="url" name="image_url" class="input" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="featured"> Featured project
+                </label>
+              </div>
+              <div class="form-group full">
+                <label>Description</label>
+                <textarea name="description" class="input" rows="3" placeholder="What does this project do?"></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" id="project-form-submit" class="btn btn-primary btn-sm">Add Project</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="resetProjectForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Projects Table -->
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Tags</th>
+                <th>Order</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="projects-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ SETTINGS TAB ═══ -->
+      <div id="panel-settings" class="tab-panel">
+        <div class="admin-form settings-form">
+          <h3>Site Settings</h3>
+          <form id="settings-form">
+            <div class="form-group">
+              <label>Hero Title</label>
+              <input type="text" name="hero_title" class="input" placeholder="Your name/brand">
+            </div>
+            <div class="form-group">
+              <label>Hero Subtitle</label>
+              <input type="text" name="hero_subtitle" class="input" placeholder="Short tagline">
+            </div>
+            <div class="form-group">
+              <label>About Text</label>
+              <textarea name="about_text" class="input" rows="4" placeholder="Your bio"></textarea>
+            </div>
+            <div class="form-group">
+              <label>X Username</label>
+              <input type="text" name="x_username" class="input" placeholder="@handle">
+            </div>
+            <div class="form-group">
+              <label>Telegram Username</label>
+              <input type="text" name="telegram_username" class="input" placeholder="@handle">
+            </div>
+            <div class="form-group">
+              <label>Avatar URL</label>
+              <input type="url" name="avatar_url" class="input" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label>Contact Email</label>
+              <input type="email" name="contact_email" class="input" placeholder="you@example.com">
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-sm">Save Settings</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>
